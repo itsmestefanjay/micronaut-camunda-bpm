@@ -11,10 +11,18 @@ configurations {
 }
 
 dependencies {
-    implementation(project(":micronaut-camunda-bpm-feature"))
     annotationProcessor(platform("io.micronaut:micronaut-bom:$micronautVersion"))
     annotationProcessor("io.micronaut:micronaut-inject-java")
     annotationProcessor("io.micronaut:micronaut-validation")
+
+    // data example
+    annotationProcessor("io.micronaut.data:micronaut-data-processor")
+    implementation("io.micronaut.data:micronaut-data-jdbc") // jdbc
+    // h2, already here
+    implementation("io.micronaut.sql:micronaut-jdbc-hikari") // connection pool
+    compileOnly("jakarta.persistence:jakarta.persistence-api:2.2.2") // for mapped entity annotation
+
+    implementation(project(":micronaut-camunda-bpm-feature"))
     implementation(platform("io.micronaut:micronaut-bom:$micronautVersion"))
     implementation("io.micronaut:micronaut-inject")
     implementation("io.micronaut:micronaut-validation")
