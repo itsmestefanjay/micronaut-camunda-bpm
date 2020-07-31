@@ -2,11 +2,8 @@ package info.novatec.micronaut.camunda.bpm.example;
 
 import org.camunda.bpm.engine.delegate.DelegateExecution;
 import org.camunda.bpm.engine.delegate.JavaDelegate;
-import org.graalvm.compiler.graph.Node.InjectedNodeParameter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import javax.inject.*;
 
 @Singleton
 public class LoggerDelegate implements JavaDelegate {
@@ -19,5 +16,8 @@ public class LoggerDelegate implements JavaDelegate {
     @Override
     public void execute(DelegateExecution delegateExecution) {
         log.info("Book count: {}", bookRepository.count());
+        Book book = new Book("Tobias und der Micronaut " + delegateExecution.getId(), 1000);
+        bookRepository.save(book);
+        throw new RuntimeException("error");
     }
 }
