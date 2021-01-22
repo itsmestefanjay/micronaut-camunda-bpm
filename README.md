@@ -1,7 +1,7 @@
 # micronaut-camunda-bpm
 **Integration between Micronaut and Camunda BPM**
 
-This project allows you to easily integrate [Camunda BPM](https://camunda.com/products/bpmn-engine/) into existing [Micronaut](https://micronaut.io) projects.
+This project allows you to easily integrate [Camunda BPM](https://camunda.com/products/bpmn-engine/) into [Micronaut](https://micronaut.io) projects.
 
 We configure Camunda BPM with sensible defaults, so that you can get started with minimum configuration: simply add a dependency in your Micronaut project!
 
