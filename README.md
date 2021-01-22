@@ -6,14 +6,12 @@ This project allows you to easily integrate [Camunda BPM](https://camunda.com/pr
 We configure Camunda BPM with sensible defaults, so that you can get started with minimum configuration: simply add a dependency in your Micronaut project!
 
 Advantages of Micronaut together with Camunda BPM:
-* Monumental leap in startup time (Currently blocked by slow MyBatis initialization)
+* Monumental leap in startup time (currently blocked by slow MyBatis initialization)
 * Minimal memory footprint
-* (...)
 
 Advantages of Camunda BPM together with Micronaut:
-* BPMN 2.0 Support
+* BPMN 2.0 support
 * Embedded process engine with low memory footprint
-* (...)
 
 Do you want to contribute to our open source project? Please read the [Contribution Guidelines](CONTRIBUTING.md) and [contact us](#contact).
 
@@ -24,40 +22,67 @@ Micronaut + Camunda BPM = :heart:
 [![Continuous Integration](https://github.com/NovatecConsulting/micronaut-camunda-bpm/workflows/Continuous%20Integration/badge.svg)](https://github.com/NovatecConsulting/micronaut-camunda-bpm/actions)
 [![Join the chat](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/NovatecConsulting/micronaut-camunda-bpm)
 
+# Table of content
+
+* [Features](#features)
+* [Getting started](#getting-started)
+  * [JDK support](#jdk-support)
+  * [Dependency management](#dependency-management)
+  * [Deploying process models](#deploying-process-models)
+  * [Camunda integration](#camunda-integration)
+  * [Process Tests](#process-tests)
+  * [Configuration](#configuration)
+  * [Transaction management](#transaction-management)
+  * [Pitfalls](#pitfalls)
+* [Compatibility Matrix](#compatibility-matrix)
+* [Contact](#contact)
+
+
 # Features
-* Camunda BPM can be integrated as an embedded process engine into a Micronaut project by simply [adding a dependency](#add-dependency-using-gradle) in build.gradle (Gradle) or pom.xml (Maven).
-* Using H2 as an in-memory database is as simple as [adding a dependency](#add-dependency-using-gradle). Other [data sources can be configured](#data-source) via properties.
-* Models (*.bpmn, *.cmmn, and *.dmn) found in the root of the resources are [automatically deployed](#deploying-process-models).
-* The Camunda process engine with its job executor is started automatically - but disabled for tests by default.
-* The process engine and related services, e.g. RuntimeService, RepositoryService, ..., are provided as lazy initialized beans and [can be injected](#calling-camunda-bpm-process-engine-and-related-services).
-* Micronaut beans are resolved from the application context if they are [referenced by expressions or Java class names](#invoking-java-delegates) within the process models.
-* The process engine [integrates with Micronaut's transaction manager](#using-micronaut-data-jdbc-or-micronaut-data-jpa). Optionally, micronaut-data-jdbc or micronaut-data-jpa are supported.
-* The process engine can be configured with [generic properties](#generic-properties).
-* The [process engine configuration](#custom-process-engine-configuration) and the [job executor configuration](#custom-jobexecutor-configuration) can be customized programmatically.
-* A Camunda admin user is created if configured by [properties](#properties) and not present yet (including admin group and authorizations).
-* Camunda BPM's telemetry feature is automatically deactivated during test execution.
+* add a camunda engine to your micronaut project with just one dependency
+* H2 in-memory database
+* automatic deployment of models (.bpmn, .dmn, .cmmn)
+* camunda engine and services available
+* camunda job executor
+* camunda webapps
+* camunda REST API
+* reference micronaut beans in your process
+* transaction management
+* configuration by (generic) properties
+    * job executor
+    * history
+    * telemetry
+    * admin user (incl. group and authorizations)
+    * ... and many more
 
 # Getting Started
 
 This section describes what needs to be done to use `micronaut-camunda-bpm-feature` in a Micronaut project.
 
-We officially support the JDK LTS releases 8 and 11 and the latest release supported by Micronaut (currently JDK 15).
+
+
+## JDK Support
+
+* JDK LTS 8
+* JDK LTS 11
+* JDK 15 (latest version supported by Micronaut)
 
 Do you need an example? See our example application at [/micronaut-camunda-bpm-example](/micronaut-camunda-bpm-example). 
 
-## Add Dependency using Gradle
-1. (Optionally) create an empty Micronaut project with `mn create-app my-example` or use [Micronaut Launch](https://launch.micronaut.io).
-2. Add the dependency in build.gradle:
+## Dependency management
+### Gradle
+1. (Optional) create an empty Micronaut project with `mn create-app my-example` or use [Micronaut Launch](https://launch.micronaut.io).
+2. Add the dependency to the build.gradle:
 ```groovy
-implementation("info.novatec:micronaut-camunda-bpm-feature:0.14.0")
-runtimeOnly("com.h2database:h2")
+implementation "info.novatec:micronaut-camunda-bpm-feature:0.14.0"
+runtimeOnly "com.h2database:h2"
 ```
 
 Note: The module `micronaut-camunda-bpm-feature` includes the dependency `org.camunda.bpm:camunda-engine` which will be resolved transitively.
 
-## Add Dependency using Maven
-1. (Optionally) create an empty Micronaut project with `mn create-app my-example --build=maven` or use [Micronaut Launch](https://launch.micronaut.io).
-2. Add the dependency in pom.xml:
+### Maven
+1. (Optional) create an empty Micronaut project with `mn create-app my-example --build=maven` or use [Micronaut Launch](https://launch.micronaut.io).
+2. Add the dependency to the pom.xml:
 ```xml
 <dependency>
   <groupId>info.novatec</groupId>
@@ -74,13 +99,15 @@ Note: The module `micronaut-camunda-bpm-feature` includes the dependency `org.ca
 Note: The module `micronaut-camunda-bpm-feature` includes the dependency `org.camunda.bpm:camunda-engine` which will be resolved transitively.
 
 ##  Deploying process models
-To deploy a process model create an executable BPMN file and save it in the resources' root. When starting the application you'll see the logs saying:
+To deploy a process model create an executable BPMN file and save it to `src/main/resources`. 
 
-`Deploying model: helloworld.bpmn`
+When starting the application you'll see the log output: `Deploying model: xxxxxxx.bpmn`
 
-## Calling Camunda BPM Process Engine and related Services
+## Camunda integration
 
-Inject the process engine or any related services using constructor injection:
+### Engine and Services
+
+Inject the process engine or any Camunda services using constructor injection:
 ```java
 // ...
 
@@ -103,11 +130,11 @@ public class MyComponent {
 }
 ```
 
-Alternatively to constructor injection, you can also use field injection, JavaBean property injection, or method parameter injection.
+Alternatively to constructor injection, you can also use field injection, Java bean property injection, or method parameter injection.
 
-## Invoking Java Delegates
+### Java Delegates
 
-To invoke a Java Delegate first create a singleton bean:
+To invoke a Java delegate create a singleton bean and reference it in your process model using the expression `${myBeanName}`:
 
 ```java
 import javax.inject.Singleton;
@@ -126,15 +153,13 @@ public class LoggerDelegate implements JavaDelegate {
 }
 ```
 
-and then reference it the process model with the expression`${loggerDelegate}`.
-
 ## Process Tests
 
 Process tests can easily be implemented with JUnit 5 by adding the `camunda-bpm-assert` library as a dependency:
 
 ```groovy
-testImplementation("org.camunda.bpm.assert:camunda-bpm-assert:8.0.0")
-testImplementation("org.assertj:assertj-core:3.16.1")
+testImplementation "org.camunda.bpm.assert:camunda-bpm-assert:8.0.0"
+testImplementation "org.assertj:assertj-core:3.16.1"
 ```
 
 and then implement the test using the usual `@MicronautTest` annotation:
@@ -171,18 +196,6 @@ class HelloWorldProcessTest {
 Note: the integration automatically disables the job executor and the process engine's telemetry feature during test execution. This is deduced from the "test" profile.
 
 See also a test in our example application: [HelloWorldProcessTest](/micronaut-camunda-bpm-example/src/test/java/info/novatec/micronaut/camunda/bpm/example/HelloWorldProcessTest.java)
-
-## Executing Blocking Operations on Netty's I/O Thread Pool 
-When using the default server implementation Netty, blocking operations must be performed on I/O instead of Netty threads to avoid possible deadlocks. Therefore, as soon as Camunda ["borrows a client thread"](https://docs.camunda.org/manual/current/user-guide/process-engine/transactions-in-processes/)  you have to make sure that the [event loop is not blocked](https://objectcomputing.com/resources/publications/sett/june-2020-micronaut-2-dont-let-event-loops-own-you).
-A frequently occurring example is the implementation of a REST endpoint which interacts with the process engine. By default, Micronaut would use a Netty thread for this blocking operation. To prevent the use of a Netty thread it is recommended to use the annotation [`@ExecuteOn(TaskExecutors.IO)`](https://docs.micronaut.io/latest/guide/index.html#reactiveServer). This will make sure that an I/O thread is used.
-
-```java
-@Post("/hello-world-process")
-@ExecuteOn(TaskExecutors.IO)
-public String startHelloWorldProcess() {
-    return runtimeService.startProcessInstanceByKey("HelloWorld").getId();
-}
-```
 
 ## Configuration
 
@@ -225,7 +238,7 @@ You may use the following properties (typically in application.yml) to configure
 | camunda.bpm.admin-user| .lastname       |                                               | Admin's lastname (mandatory if the id is present) |
 | camunda.bpm.admin-user| .email          |                                               | Admin's email address (optional) |
 
-## Generic Properties
+### Generic Properties
 
 The process engine can be configured using generic properties listed in Camunda's Documentation: [Configuration Properties](https://docs.camunda.org/manual/latest/reference/deployment-descriptors/tags/process-engine/#configuration-properties).
 
@@ -288,15 +301,15 @@ public class MyJobExecutorCustomizer implements JobExecutorCustomizer {
 }
 ```
 
-## Using micronaut-data-jdbc or micronaut-data-jpa
+## Transaction management
 
-The process engine integrates with Micronaut's transaction manager and uses Hikari Connection Pool:
-* When interacting with the process engine, e.g. starting or continuing a process, the existing transaction will be propagated.
-* JavaDelegates and Listeners will have the surrounding Camunda transaction propagated to them allowing the atomic persistence of data.
+By default the process engine integrates with Micronaut's transaction manager and uses a Hikari connection pool:
+* When interacting with the process engine, e.g. starting or continuing a process, the existing transaction will be propagated
+* JavaDelegates and Listeners will have the surrounding Camunda transaction propagated to them allowing the atomic persistence of data
 
-Optionally, micronaut-data-jdbc or micronaut-data-jpa are supported.
+Optionally, `micronaut-data-jdbc` or `micronaut-data-jpa` are supported
 
-### Alternative 1: micronaut-data-jdbc
+### Using micronaut-data-jdbc
 
 To enable embedded transactions management support **with micronaut-data-jdbc** please add the following dependencies to your project:
 
@@ -304,8 +317,8 @@ To enable embedded transactions management support **with micronaut-data-jdbc** 
 <summary>Click to show Gradle dependencies</summary>
 
 ```groovy
-annotationProcessor("io.micronaut.data:micronaut-data-processor")
-implementation("io.micronaut.data:micronaut-data-jdbc")
+annotationProcessor "io.micronaut.data:micronaut-data-processor"
+implementation "io.micronaut.data:micronaut-data-jdbc"
 ```
 </details>
 
@@ -332,7 +345,7 @@ And also add the annotation processor to every (!) `annotationProcessorPaths` el
 
 and then configure the JDBC properties as described [micronaut-sql documentation](https://micronaut-projects.github.io/micronaut-sql/latest/guide/#jdbc).
 
-### Alternative 2: micronaut-data-jpa
+### Using micronaut-data-jpa
 
 To enable embedded transactions management support **with micronaut-data-jpa** please add the following dependencies to your project:
 
@@ -340,8 +353,8 @@ To enable embedded transactions management support **with micronaut-data-jpa** p
 <summary>Click to show Gradle dependencies</summary>
 
 ```groovy
-annotationProcessor("io.micronaut.data:micronaut-data-processor")
-implementation("io.micronaut.data:micronaut-hibernate-jpa")
+annotationProcessor "io.micronaut.data:micronaut-data-processor"
+implementation "io.micronaut.data:micronaut-hibernate-jpa"
 ```
 </details>
 
@@ -368,7 +381,22 @@ And also add the annotation processor to every (!) `annotationProcessorPaths` el
 
 and then configure JPA as described in [micronaut-sql documentation](https://micronaut-projects.github.io/micronaut-sql/latest/guide/#hibernate).
 
-## Compatibility Matrix
+
+## Pitfalls
+
+### Executing Blocking Operations on Netty's I/O Thread Pool
+When using the default server implementation Netty, blocking operations must be performed on I/O instead of Netty threads to avoid possible deadlocks. Therefore, as soon as Camunda ["borrows a client thread"](https://docs.camunda.org/manual/current/user-guide/process-engine/transactions-in-processes/)  you have to make sure that the [event loop is not blocked](https://objectcomputing.com/resources/publications/sett/june-2020-micronaut-2-dont-let-event-loops-own-you).
+A frequently occurring example is the implementation of a REST endpoint which interacts with the process engine. By default, Micronaut would use a Netty thread for this blocking operation. To prevent the use of a Netty thread it is recommended to use the annotation [`@ExecuteOn(TaskExecutors.IO)`](https://docs.micronaut.io/latest/guide/index.html#reactiveServer). This will make sure that an I/O thread is used.
+
+```java
+@Post("/hello-world-process")
+@ExecuteOn(TaskExecutors.IO)
+public String startHelloWorldProcess() {
+    return runtimeService.startProcessInstanceByKey("HelloWorld").getId();
+}
+```
+
+# Compatibility Matrix
 
 The following compatibility matrix shows the officially supported Micronaut and Camunda BPM versions for each release.
 Other combinations might also work but have not been tested.  
@@ -400,7 +428,7 @@ Download of Releases:
 * [GitHub Artifacts](https://github.com/NovatecConsulting/micronaut-camunda-bpm/releases)
 * [Maven Central Artifacts](https://search.maven.org/artifact/info.novatec/micronaut-camunda-bpm-feature)
 
-## Contact
+# Contact
 
 This open source project is being developed by [Novatec Consulting GmbH](https://www.novatec-gmbh.de/en/) with the support of the open source community.
 
