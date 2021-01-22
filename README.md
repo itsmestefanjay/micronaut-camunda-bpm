@@ -30,9 +30,9 @@ Micronaut + Camunda BPM = :heart:
   * [Dependency management](#dependency-management)
   * [Deploying process models](#deploying-process-models)
   * [Camunda integration](#camunda-integration)
-  * [Process Tests](#process-tests)
   * [Configuration](#configuration)
   * [Transaction management](#transaction-management)
+  * [Process Tests](#process-tests)
   * [Pitfalls](#pitfalls)
 * [Compatibility Matrix](#compatibility-matrix)
 * [Contact](#contact)
@@ -152,50 +152,6 @@ public class LoggerDelegate implements JavaDelegate {
     }
 }
 ```
-
-## Process Tests
-
-Process tests can easily be implemented with JUnit 5 by adding the `camunda-bpm-assert` library as a dependency:
-
-```groovy
-testImplementation "org.camunda.bpm.assert:camunda-bpm-assert:8.0.0"
-testImplementation "org.assertj:assertj-core:3.16.1"
-```
-
-and then implement the test using the usual `@MicronautTest` annotation:
-
-```java
-import io.micronaut.test.extensions.junit5.annotation.MicronautTest;
-import org.camunda.bpm.engine.RuntimeService;
-import org.camunda.bpm.engine.runtime.ProcessInstance;
-import org.junit.jupiter.api.Test;
-
-import javax.inject.Inject;
-
-import static org.camunda.bpm.engine.test.assertions.bpmn.BpmnAwareTests.*;
-
-@MicronautTest
-class HelloWorldProcessTest {
-
-    @Inject
-    RuntimeService runtimeService;
-
-    @Test
-    void happyPath() {
-        ProcessInstance processInstance = runtimeService.startProcessInstanceByKey("HelloWorld");
-        assertThat(processInstance).isStarted();
-
-        assertThat(processInstance).isWaitingAt("TimerEvent_Wait");
-        execute(job());
-
-        assertThat(processInstance).isEnded();
-    }
-}
-```
-
-Note: the integration automatically disables the job executor and the process engine's telemetry feature during test execution. This is deduced from the "test" profile.
-
-See also a test in our example application: [HelloWorldProcessTest](/micronaut-camunda-bpm-example/src/test/java/info/novatec/micronaut/camunda/bpm/example/HelloWorldProcessTest.java)
 
 ## Configuration
 
@@ -381,6 +337,49 @@ And also add the annotation processor to every (!) `annotationProcessorPaths` el
 
 and then configure JPA as described in [micronaut-sql documentation](https://micronaut-projects.github.io/micronaut-sql/latest/guide/#hibernate).
 
+## Process Tests
+
+Process tests can easily be implemented with JUnit 5 by adding the `camunda-bpm-assert` library as a dependency:
+
+```groovy
+testImplementation "org.camunda.bpm.assert:camunda-bpm-assert:8.0.0"
+testImplementation "org.assertj:assertj-core:3.16.1"
+```
+
+and then implement the test using the usual `@MicronautTest` annotation:
+
+```java
+import io.micronaut.test.extensions.junit5.annotation.MicronautTest;
+import org.camunda.bpm.engine.RuntimeService;
+import org.camunda.bpm.engine.runtime.ProcessInstance;
+import org.junit.jupiter.api.Test;
+
+import javax.inject.Inject;
+
+import static org.camunda.bpm.engine.test.assertions.bpmn.BpmnAwareTests.*;
+
+@MicronautTest
+class HelloWorldProcessTest {
+
+    @Inject
+    RuntimeService runtimeService;
+
+    @Test
+    void happyPath() {
+        ProcessInstance processInstance = runtimeService.startProcessInstanceByKey("HelloWorld");
+        assertThat(processInstance).isStarted();
+
+        assertThat(processInstance).isWaitingAt("TimerEvent_Wait");
+        execute(job());
+
+        assertThat(processInstance).isEnded();
+    }
+}
+```
+
+Note: the integration automatically disables the job executor and the process engine's telemetry feature during test execution. This is deduced from the "test" profile.
+
+See also a test in our example application: [HelloWorldProcessTest](/micronaut-camunda-bpm-example/src/test/java/info/novatec/micronaut/camunda/bpm/example/HelloWorldProcessTest.java)
 
 ## Pitfalls
 
